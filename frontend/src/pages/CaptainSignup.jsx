@@ -1,8 +1,21 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
+import { CaptainDataContext } from '../context/CaptainContext';
+import { useContext } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 function CaptainSignup() {
+
+  const Navigate=useNavigate();
+
+  const {captain,setCaptain}=useContext(CaptainDataContext);
+
+  const [vehicleColor, setVehicleColor] = useState('');
+  const [vehiclePlate, setVehiclePlate] = useState('');
+  const [vehicleCapacity, setVehicleCapacity] = useState('');
+  const [vehicleType, setVehicleType] = useState('');
 
 
 
@@ -13,17 +26,39 @@ function CaptainSignup() {
   const [userdata,setuserdata]=useState({});
 
 
-  const submitHandler=(e)=>{
+  const submitHandler=async (e)=>{
     e.preventDefault();
-    setuserdata({fullname:{
+    const captainData={
+      fullname:{
       firstname:firstname,
       lastname:lastname
-    },email:email,password:password});
-    console.log(userdata);
+    },email:email,
+    password:password,
+    vechile:{
+      color:vehicleColor,
+      plate:vehiclePlate,
+      capacity:vehicleCapacity,
+      vechileType:vehicleType
+    }
+  }
+   const response=await axios.post(`${import.meta.env.VITE_BASE_URL}/captain/register`,captainData);
+
+   if(response.status===201){
+      console.log(response.data);
+      setCaptain(response.data.captain);
+      localStorage.setItem('token',response.data.token);
+      Navigate('/captain-home');
+
+   }
+    
     setemail('');
     setpassword('');
     setfirstname('');
     setlastname('');
+    setVehicleColor('');
+    setVehiclePlate('');
+    setVehicleCapacity('');
+    setVehicleType('');
 
   }
 
@@ -63,7 +98,61 @@ function CaptainSignup() {
       
       className='bg-[#eeeeee] rounded px-4 py-2 border w-full text-base placeholder:text-base mb-5'
       type="password" required placeholder='password'/>
-      <button  className='bg-[#111] text-white font-semibold rounded px-4 py-2 border w-full text-lg placeholder:text-base mb-2'>login</button>
+
+      <h3 className='text-lg mb-2 font-medium'>Vehicle Information</h3>
+      <div className='mb-5'>
+        <label className='block mb-2'>Vehicle Color</label>
+        <input
+          value={vehicleColor}
+          onChange={(e) => setVehicleColor(e.target.value)}
+          className='bg-[#eeeeee] rounded px-4 py-2 border w-full text-base placeholder:text-base'
+          type="text"
+          required
+          placeholder='Vehicle Color'
+        />
+      </div>
+      <div className='mb-5'>
+        <label className='block mb-2'>Vehicle Plate</label>
+        <input
+          value={vehiclePlate}
+          onChange={(e) => setVehiclePlate(e.target.value)}
+          className='bg-[#eeeeee] rounded px-4 py-2 border w-full text-base placeholder:text-base'
+          type="text"
+          required
+          placeholder='Vehicle Plate'
+        />
+      </div>
+      <div className='mb-5'>
+        <label className='block mb-2'>Vehicle Capacity</label>
+        <input
+          value={vehicleCapacity}
+          onChange={(e) => setVehicleCapacity(e.target.value)}
+          className='bg-[#eeeeee] rounded px-4 py-2 border w-full text-base placeholder:text-base'
+          type="number"
+          required
+          placeholder='Vehicle Capacity'
+        />
+      </div>
+      <div className='mb-5'>
+        <label className='block mb-2'>Vehicle Type</label>
+        <select
+          value={vehicleType}
+          onChange={(e) => setVehicleType(e.target.value)}
+          className='bg-[#eeeeee] rounded px-4 py-2 border w-full text-base placeholder:text-base'
+          required
+        >
+          <option value="" disabled>Select Vehicle Type</option>
+          <option value="car">Car</option>
+          <option value="auto">Auto</option>
+          <option value="moto">Moto</option>
+        </select>
+      </div>
+
+
+
+
+
+      <button  className='bg-[#111] text-white font-semibold rounded px-4 py-2 border w-full text-lg placeholder:text-base mb-2'>create Captain Account</button>
     </form>
     <p className='text-center'>already have an Account? <Link to='/login' className='text-blue-600'>login</Link></p>
     
