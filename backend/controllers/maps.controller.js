@@ -15,7 +15,7 @@ module.exports.getCoordinates=async(req,res,next)=>{
 
 
 
-    const {address}=req.body;
+    const {address}=req.query;
 
     try {
         const coordinates=await mapService.getAddresCoordinate(address);
@@ -27,5 +27,19 @@ module.exports.getCoordinates=async(req,res,next)=>{
 }
 
 module.exports.getDistanceTime=async(req,res,next)=>{
-    
+    try {
+        const error=validationResult(req);
+        if(!error.isEmpty()){
+            return res.status(400).json({errors:errors.array()});
+
+
+        }
+        const {origin,destination}=req.body;
+        const distanceTime=await mapService.getDistanceAndtime(origin,destination);
+        res.status(200).json(distanceTime);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({message:"internal server error"});
+        
+    }
 }
