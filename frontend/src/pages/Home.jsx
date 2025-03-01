@@ -10,6 +10,7 @@ import ConfirmRide from "../components/confirmRide";
 import LookingForDriver from "../components/LookingForDriver";
 import WaitingForDriver from "../components/WaitingForDriver";
 
+
 function Home() {
   const [Pickup, setPickup] = useState("");
   const [Destination, setDestination] = useState("");
@@ -26,24 +27,34 @@ function Home() {
   const [waitingPanel, setwaitingPanel] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
   const [currentField, setCurrentField] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const[fare,setFare]=useState({});
+  const[vechileType,setVechileType]=useState(null);
 
   const submitHandler = (e) => {
     e.preventDefault();
   };
 
   const fetchSuggestions = async (query) => {
-    if (!query) {
+    if (!query || query.length < 3) {
       setSuggestions([]);
       return;
     }
+    setLoading(true);
+    setError(null);
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/maps/get-suggestion?input=${query}`,{
+        `${
+          import.meta.env.VITE_BASE_URL
+        }/maps/get-suggestion?input=${encodeURIComponent(query)}`,
+        {
           headers: {
             Authorization: `Bearer ${token}`, // Ensure Bearer is included
           },
-        });
+        }
+      );
       setSuggestions(response.data);
     } catch (error) {
       console.error("Error fetching suggestions:", error);
@@ -53,18 +64,15 @@ function Home() {
 
   const handleSelectSuggestion = (suggestion) => {
     if (currentField === "pickup") {
-      setPickup(suggestion);
+      setPickup(suggestion.display_name);
     } else {
-      setDestination(suggestion);
+      setDestination(suggestion.display_name);
     }
-    setPanel(false);
+    // setPanel(false);
     setSuggestions([]);
     // Optionally, you can open the next panel after selection
-    setvechilePanelOpen(true);
-};
-
-  
-
+    
+  };
 
   // panel gsap
   useGSAP(() => {
@@ -138,11 +146,76 @@ function Home() {
         transform: "translateY(100%)",
       });
     }
-  }, [waitingPanel]); 
+  }, [waitingPanel]);
 
-    // When user clicks a suggestion from the LocationSerachpanel
+  // When user clicks a suggestion from the LocationSerachpanel
+  async function findTrip() {
+    try {
+      setvechilePanelOpen(true);
+      setPanel(false);
   
+      const token = localStorage.getItem("token"); // Ensure token is retrieved correctly
+      if (!token) {
+        console.error("❌ No token found in localStorage!");
+        return;
+      }
+  
+      console.log("🟡 Sending request to:", `${import.meta.env.VITE_BASE_URL}/rides/get-fare`);
+      console.log("📍 Pickup:", Pickup, "📍 Destination:", Destination);
+  
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/rides/get-fare`, {
+        params: { Pickup, Destination },
+        headers: {
+          Authorization: `Bearer ${token}`, // Ensure Bearer is included
+        },
+      });
+  
+      console.log("✅ Response received:", response.data.fare);
+      setFare(response.data.fare); // Store fare details in state (if needed)
+    } catch (error) {
+      console.error("❌ Error fetching fare:", error);
+      if (error.response) {
+        console.error("📌 Server responded with:", error.response.status, error.response.data);
+      }
+    }
+  }
 
+
+  const createRide=async()=>{
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("No token found in localStorage!");
+        return;
+      }
+      console.log({Pickup,Destination,vechileType});
+
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/rides/create`,
+        {
+          Pickup,
+          Destination,
+          vechileType,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("Ride created successfully:", response.data);
+      // setconfirmRidePanel(false);
+      // setvechileFound(true);
+    } catch (error) {
+      console.error("Error creating ride:", error);
+      if (error.response) {
+        console.error("Server responded with:", error.response.status, error.response.data);
+      }
+    }
+
+  }
+  
 
 
 
@@ -200,14 +273,28 @@ function Home() {
                 setCurrentField("destination");
               }}
               value={Destination}
-              onChange={(e) => {setDestination(e.target.value);
-                fetchSuggestions(e.target.value);}}
+              onChange={(e) => {
+                setDestination(e.target.value);
+                fetchSuggestions(e.target.value);
+              }}
               className="bg-[#eeee] px-12 py-2 text-base rounded-lg w-full mt-3"
               type="text"
               placeholder="select you destination"
             />
           </form>
         </div>
+        {Pickup && Destination && (
+          <div className="p-4">
+            <button
+              onClick={() => findTrip()
+              }
+              className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition"
+            >
+              Confirm Location
+            </button>
+          </div>
+        )}
+
         <div ref={panelRef} className="opacity-0 h-0 bg-white-500">
           <LocationSerachpanel
             suggestions={suggestions}
@@ -224,6 +311,9 @@ function Home() {
         className="w-full fixed z-10 bottom-0 p-3 bg-white py-10 translate-y-full "
       >
         <VechilePanel
+          setVechileType={setVechileType}
+          // createRide={createRide}
+          fare={fare}
           setconfirmRidePanel={setconfirmRidePanel}
           setvechilePanelOpen={setvechilePanelOpen}
         />
@@ -233,6 +323,11 @@ function Home() {
         className="w-full fixed z-10 bottom-0 p-3 bg-white py-6 translate-y-full "
       >
         <ConfirmRide
+          Pickup={Pickup}
+          Destination={Destination}
+          fare={fare}
+          vechileType={vechileType}
+          createRide={createRide}
           setconfirmRidePanel={setconfirmRidePanel}
           setvechilePanelOpen={setvechilePanelOpen}
           setvechileFound={setvechileFound}
@@ -242,7 +337,12 @@ function Home() {
         ref={vechileFoundRef}
         className="w-full fixed z-10 bottom-0 p-3 bg-white py-6 translate-y-full "
       >
-        <LookingForDriver setvechileFound={setvechileFound} />
+        <LookingForDriver
+         Pickup={Pickup}
+         vechileType={vechileType}
+         Destination={Destination}
+        //  fare={fare}
+         setvechileFound={setvechileFound} />
       </div>
       <div
         ref={waitingForDriverRef}
