@@ -30,16 +30,33 @@ module.exports.getDistanceTime=async(req,res,next)=>{
     try {
         const error=validationResult(req);
         if(!error.isEmpty()){
-            return res.status(400).json({errors:errors.array()});
+            return res.status(400).json({errors: error.array()});
 
 
         }
-        const {origin,destination}=req.body;
+        const {origin,destination}=req.query;
         const distanceTime=await mapService.getDistanceAndtime(origin,destination);
         res.status(200).json(distanceTime);
     } catch (error) {
+        console.error(error.message);
         console.log(error);
         res.status(500).json({message:"internal server error"});
+        
+    }
+}
+
+module.exports.getAutoCompleteSuggestions=async(req,res,next)=>{
+    try {
+        const error=validationResult(req);
+        if(!error.isEmpty){
+            return res.status(400).json({errors:error.array() });
+        }
+        const {input}=req.query;
+        const suggestion=await mapService.getAutoCompletesuggestion(input);
+        res.status(200).json(suggestion);
+    } catch (error) {
+        console.error("Controller Error:", error.message);
+        res.status(500).json({message:'internal server error'});
         
     }
 }
