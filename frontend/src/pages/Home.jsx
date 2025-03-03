@@ -341,7 +341,7 @@ function Home() {
          Pickup={Pickup}
          vechileType={vechileType}
          Destination={Destination}
-        //  fare={fare}
+         fare={fare}
          setvechileFound={setvechileFound} />
       </div>
       <div
