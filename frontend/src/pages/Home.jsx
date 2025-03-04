@@ -9,6 +9,10 @@ import VechilePanel from "../components/VechilePanel";
 import ConfirmRide from "../components/confirmRide";
 import LookingForDriver from "../components/LookingForDriver";
 import WaitingForDriver from "../components/WaitingForDriver";
+import { SocketContext } from "../context/socketContext";
+import { useContext } from "react";
+import { useEffect } from "react";
+import {UserDataContext} from "../context/userContext";
 
 
 function Home() {
@@ -31,6 +35,21 @@ function Home() {
   const [error, setError] = useState(null);
   const[fare,setFare]=useState({});
   const[vechileType,setVechileType]=useState(null);
+
+
+
+  const {Socket}=useContext(SocketContext);
+  const {user}=useContext(UserDataContext);
+
+  useEffect(() => {
+    if (!user) return;
+    console.log(user);
+    Socket.emit('join', { userType: 'user', userId: user._id });
+  }, [user]);
+
+
+
+
 
   const submitHandler = (e) => {
     e.preventDefault();

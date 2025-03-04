@@ -7,43 +7,76 @@ import gsap from "gsap";
 import { useState } from "react";
 import { useRef } from "react";
 import ConfirmRidePopUp from "../components/ConfirmRidePopUp";
+import { useEffect, useContext } from "react";
+import { SocketContext } from "../context/socketContext";
+import { CaptainDataContext } from "../context/CaptainContext";
 
 function CaptainHome() {
+  const [ridePopupPanel, setridePopupPanel] = useState(true);
+  const [confirmridePopupPanel, setconfirmridePopupPanel] = useState(false);
+
+  const ridePopupPanelRef = useRef(null);
+  const confirmridePopupPanelRef = useRef(null);
+
+  const { Socket } = useContext(SocketContext);
+  const { captain } = useContext(CaptainDataContext);
+
+  useEffect(() => {
+    Socket.emit("join", {
+      userId: captain._id,
+      userType: "captain",
+    });
+
+    const sendLocation = () => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((position) => {
+
+          console.log({userId: captain._id,
+            location: {
+              ltd: position.coords.latitude,
+              lng: position.coords.longitude,
+            }})
 
 
-  const[ridePopupPanel,setridePopupPanel]=useState(true)
-  const[confirmridePopupPanel,setconfirmridePopupPanel]=useState(false)
-
-    const ridePopupPanelRef=useRef(null)
-    const confirmridePopupPanelRef=useRef(null)
-
-    useGSAP(() => {
-        if (ridePopupPanel) {
-          gsap.to(ridePopupPanelRef.current, {
-            transform: "translateY(0)",
+          Socket.emit("update-location-captain", {
+            userId: captain._id,
+            location: {
+              ltd: position.coords.latitude,
+              lng: position.coords.longitude,
+            },
           });
-        } else {
-          gsap.to(ridePopupPanelRef.current, {
-            transform: "translateY(100%)",
-          });
-        }
-      }, [ridePopupPanel]);
+        });
+      }
+    };
 
-      useGSAP(() => {
-        if (confirmridePopupPanel) {
-          gsap.to(confirmridePopupPanelRef.current, {
-            transform: "translateY(0)",
-          });
-        } else {
-          gsap.to(confirmridePopupPanelRef.current, {
-            transform: "translateY(100%)",
-          });
-        }
-      }, [confirmridePopupPanel]);
+    const locationInterval = setInterval(sendLocation, 10000);
 
+    return () => clearInterval(locationInterval);
+  });
 
+  useGSAP(() => {
+    if (ridePopupPanel) {
+      gsap.to(ridePopupPanelRef.current, {
+        transform: "translateY(0)",
+      });
+    } else {
+      gsap.to(ridePopupPanelRef.current, {
+        transform: "translateY(100%)",
+      });
+    }
+  }, [ridePopupPanel]);
 
-
+  useGSAP(() => {
+    if (confirmridePopupPanel) {
+      gsap.to(confirmridePopupPanelRef.current, {
+        transform: "translateY(0)",
+      });
+    } else {
+      gsap.to(confirmridePopupPanelRef.current, {
+        transform: "translateY(100%)",
+      });
+    }
+  }, [confirmridePopupPanel]);
 
   return (
     <div className="h-screen">
@@ -64,20 +97,25 @@ function CaptainHome() {
         />
       </div>
       <div className="h-2/5 p-6">
-        <CaptainDetails/>
+        <CaptainDetails />
       </div>
       <div
         ref={ridePopupPanelRef}
         className="w-full fixed z-10 bottom-0 p-3 translate-y-full  bg-white py-10  "
       >
-        <RidePopUp setridePopupPanel={setridePopupPanel} setconfirmridePopupPanel={setconfirmridePopupPanel} />
+        <RidePopUp
+          setridePopupPanel={setridePopupPanel}
+          setconfirmridePopupPanel={setconfirmridePopupPanel}
+        />
       </div>
       <div
         ref={confirmridePopupPanelRef}
         className="w-full fixed z-10 bottom-0 p-3 translate-y-full  bg-white py-10 h-screen  "
       >
-        <ConfirmRidePopUp setridePopupPanel={setridePopupPanel} 
-        setconfirmridePopupPanel={setconfirmridePopupPanel} />
+        <ConfirmRidePopUp
+          setridePopupPanel={setridePopupPanel}
+          setconfirmridePopupPanel={setconfirmridePopupPanel}
+        />
       </div>
     </div>
   );
