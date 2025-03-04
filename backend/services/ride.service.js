@@ -3,13 +3,13 @@ const mapService = require("../services/maps.services");
 // const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 
-const getfare = async (pickup, destination) => {
-    if (!pickup || !destination) {
+const getfare = async (Pickup, Destination) => {
+    if (!Pickup || !Destination) {
       throw new Error("pickup and destination is required");
     }
     const distanceTime = await mapService.getDistanceAndtime(
-      pickup,
-      destination
+      Pickup,
+      Destination
     );
     const fareRates = {
       auto: 5, // rate per km
@@ -38,6 +38,8 @@ const getfare = async (pickup, destination) => {
     };
 }; 
 
+module.exports.getfare=getfare
+
 
 const getOTP=(num)=>{
     const generateOTP = (num) => {
@@ -55,6 +57,7 @@ const getOTP=(num)=>{
 module.exports.CreateRide = async ({
     user,pickup,destination,vechileType
 }) => {
+  console.log("Received data in CreateRide:", { user, pickup, destination, vechileType });
     if(!user || !pickup|| !destination || !vechileType){
         throw new Error('all field are required')
     }

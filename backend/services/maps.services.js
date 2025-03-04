@@ -1,4 +1,5 @@
 const axios = require("axios");
+const captainModel=require('../models/captain.models');
 
 module.exports.getAddresCoordinate = async (address) => {
   const apiKey = process.env.LOCATIONIQ_API_KEY;
@@ -103,4 +104,18 @@ module.exports.getAutoCompletesuggestion=async(input)=>{
     console.error("Error fetching suggestions:", error.response?.data || error.message);  // Improved logging
     throw new Error("Unable to fetch suggestions");  // Throw a descriptive error
   }
+};
+
+
+module.exports.getCaptainsIntheRadius=async(ltd,lng,radius)=>{
+  const captains=await captainModel.find({
+    location:{
+      $geowithin:{
+        $centersphere:[[ltd,lng],radius/3963.2]
+      }
+    }
+  });
+
+  return captains;
+
 }

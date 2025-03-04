@@ -25,6 +25,8 @@ module.exports.authUser=async(req,res,next)=>{
         }
         req.user=user;
         next();
+        console.log("Authenticated user:", req.user);
+
     }catch(err){
         return res.status(401).json({message:'unauthorized'});
     }   
