@@ -27,32 +27,39 @@ function CaptainHome() {
       userType: "captain",
     });
 
-    const sendLocation = () => {
+    const updateLocation = () => {
       if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition((position) => {
-
-          console.log({userId: captain._id,
-            location: {
-              ltd: position.coords.latitude,
-              lng: position.coords.longitude,
-            }})
-
-
-          Socket.emit("update-location-captain", {
-            userId: captain._id,
-            location: {
-              ltd: position.coords.latitude,
-              lng: position.coords.longitude,
-            },
-          });
-        });
+          navigator.geolocation.getCurrentPosition(position => {
+              console.log({
+                userID:captain._id,
+                location: {
+                  userId: captain._id,
+                  ltd: position.coords.latitude,
+                  lng: position.coords.longitude
+              }
+              })
+              Socket.emit('update-location-captain', {
+                  userId: captain._id,
+                  location: {
+                      userId: captain._id,
+                      ltd: position.coords.latitude,
+                      lng: position.coords.longitude
+                  }
+              })
+          })
       }
-    };
+  }
 
-    const locationInterval = setInterval(sendLocation, 10000);
+    const locationInterval = setInterval(updateLocation, 10000);
+    updateLocation();
 
-    return () => clearInterval(locationInterval);
+    // return () => clearInterval(locationInterval);
   });
+
+  Socket.on('new-ride',(data)=>{
+      console.log(data)
+      setconfirmridePopupPanel(true)
+  })
 
   useGSAP(() => {
     if (ridePopupPanel) {
