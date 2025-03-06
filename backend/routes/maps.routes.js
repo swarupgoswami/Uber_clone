@@ -1,6 +1,7 @@
 const express=require('express');
 const router=express.Router();
 const authMiddleware=require('../middlewares/auth.middleware');
+const mapService = require('../services/maps.services');
 
 const mapController=require('../controllers/maps.controller')
 const {query}=require('express-validator');
@@ -22,8 +23,14 @@ router.get('/get-suggestion',
     mapController.getAutoCompleteSuggestions
 );
 
-
-
-
+router.post('/fix-captain-locations', async (req, res) => {
+    try {
+        await mapService.fixCaptainLocations();
+        res.json({ message: 'Captain locations updated successfully' });
+    } catch (error) {
+        console.error('Error fixing captain locations:', error);
+        res.status(500).json({ message: 'Error updating captain locations' });
+    }
+});
 
 module.exports=router;
