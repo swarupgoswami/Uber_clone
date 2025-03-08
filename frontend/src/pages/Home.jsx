@@ -13,6 +13,7 @@ import { SocketContext } from "../context/socketContext";
 import { useContext } from "react";
 import { useEffect } from "react";
 import { UserDataContext } from "../context/userContext";
+import { useNavigate } from "react-router-dom";
 
 function Home() {
   const [Pickup, setPickup] = useState("");
@@ -35,6 +36,7 @@ function Home() {
   const [fare, setFare] = useState({});
   const [vechileType, setVechileType] = useState(null);
   const[ride,setride]=useState(null);
+  const navigate=useNavigate();
 
   const { Socket } = useContext(SocketContext);
   const { user } = useContext(UserDataContext);
@@ -50,6 +52,12 @@ function Home() {
     setvechileFound(false);
     setride(ride);
   });
+
+  Socket.on('ride-started',(ride)=>{
+    setwaitingPanel(false)
+    navigate('/riding',{state:{ride}});
+
+  })
 
   const submitHandler = (e) => {
     e.preventDefault();

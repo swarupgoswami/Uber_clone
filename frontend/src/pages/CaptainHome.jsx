@@ -157,6 +157,7 @@ function CaptainHome() {
         className="w-full fixed z-10 bottom-0 p-3 translate-y-full  bg-white py-10 h-screen  "
       >
         <ConfirmRidePopUp
+          ride={ride}
           setridePopupPanel={setridePopupPanel}
           setconfirmridePopupPanel={setconfirmridePopupPanel}
         />
