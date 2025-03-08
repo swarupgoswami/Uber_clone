@@ -10,13 +10,20 @@ router.post('/create',authMiddleware.authUser,
     body('vechileType').isString().isIn(['auto','motorcycle','car']).withMessage('invalid vehcileType'),
     riderController.createRide
     
- )
+)
+
+
 
 router.get('/get-fare',
     authMiddleware.authUser,
     query('Pickup').isString().isLength({min:3}).withMessage('invalid pickup'),
     query('Destination').isString().isLength({min:3}).withMessage('invalid destination address'),
     riderController.getFare
+)
+
+router.post('/confirm',authMiddleware.authCaptain,
+    body('rideId').isMongoId().withMessage('invalid ride id'),
+    riderController.confirmRide
 )
 
 

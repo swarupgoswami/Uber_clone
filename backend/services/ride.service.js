@@ -1,4 +1,6 @@
+const { error } = require("console");
 const rideModel = require("../models/ride.model");
+const userModel = require("../models/user.model");
 const mapService = require("../services/maps.services");
 // const bcrypt = require('bcrypt');
 const crypto = require('crypto');
@@ -41,14 +43,12 @@ const getfare = async (Pickup, Destination) => {
 module.exports.getfare=getfare
 
 
-const getOTP=(num)=>{
-    const generateOTP = (num) => {
+const getOTP=(num=4)=>{
+    
       const otp = Math.floor(Math.pow(10, num-1) + Math.random() * (Math.pow(10, num) - Math.pow(10, num-1)));
       const hashedOTP = crypto.createHash('sha256').update(otp.toString()).digest('hex');
-      return hashedOTP;
-    };
+      return otp.toString();
 
-    return generateOTP(num);
 }
 
 
@@ -67,11 +67,36 @@ module.exports.CreateRide = async ({
         user,
         pickup,
         destination,
-        otp:getOTP(6),
-        fare:fare[vechileType]
+        otp:getOTP(),
+        fare:fare.fare[vechileType]
 
     })
     return ride;
     
 
 };
+
+
+module.exports.confirmRide=async({
+  rideId,captain
+})=>{
+  if(!rideId){
+    throw new Error('ride id is required');
+  }
+
+  await rideModel.findOneAndUpdate({
+    _id:rideId
+  },{
+    status:'accepted',
+    captain:captain._id
+  
+  })
+
+
+  const ride=await rideModel.findOne({_id:rideId}).populate('user').populate('captain').select('+otp');
+
+  if(!ride){
+    throw new Error('Ride not found');
+  }
+  return ride;
+}
