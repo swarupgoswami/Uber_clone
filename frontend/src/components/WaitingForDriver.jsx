@@ -14,9 +14,10 @@ const WaitingForDriver = (props) => {
       <div className='flex items-center justify-between'>
         <img className='h-13' src="https://www.uber-assets.com/image/upload/f_auto,q_auto:eco,c_fill,h_552,w_552/v1555366873/assets/37/e0e5f7-29d6-492c-b903-2fd99353af02/original/Final_Lux.png" alt="" />
         <div className="text-right">
-          <h2 className='text-xl font-bold -mt-1 -mb-1'>driver's name</h2>
-          <h4 className='text-xl font-medium'>JH 10 AC 7710</h4>
+          <h2 className='text-xl font-bold -mt-1 -mb-1'>{props.ride?.captain?.fullname?.firstname|| "Loading..."}</h2>
+          <h4 className='text-xl font-medium'>{props.ride?.captain?.vechile?.plate|| "Loading..."}</h4>
           <p className='text-sm text-gray-700 '>maruti suzuki alto</p>
+          <h4 className='text-lg font-semibold'>{props.ride?.otp||'loading..'}</h4>
         </div>
       </div>
       
@@ -28,7 +29,7 @@ const WaitingForDriver = (props) => {
             <i className="text-lg ri-map-pin-fill"></i>
             <div className="">
               <h3 className="font-bold text-xl">562/11-A</h3>
-              <p className="text-gray-500">kankariya Talab , Ahemdabad</p>
+              <p className="text-gray-500">{props.ride?.pickup|| "Loading..."}</p>
             </div>
           </div>
 
@@ -39,7 +40,7 @@ const WaitingForDriver = (props) => {
             <i className="text-lg ri-map-pin-fill"></i>
             <div className="">
               <h3 className="font-bold text-xl">562/11-A</h3>
-              <p className="text-gray-500">kankariya Talab , Ahemdabad</p>
+              <p className="text-gray-500">{props.ride?.destination|| "Loading..."}</p>
             </div>
           </div>
 
@@ -50,7 +51,7 @@ const WaitingForDriver = (props) => {
             <i className="text-lg ri-money-dollar-box-line"></i>
             <div className="">
               <h3 className="font-bold text-xl">$10</h3>
-              <p className="text-gray-500">kankariya Talab , Ahemdabad</p>
+              <p className="text-gray-500">{props.ride?.fare|| "Loading..."}</p>
             </div>
           </div>
 

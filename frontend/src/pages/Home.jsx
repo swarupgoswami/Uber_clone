@@ -12,8 +12,7 @@ import WaitingForDriver from "../components/WaitingForDriver";
 import { SocketContext } from "../context/socketContext";
 import { useContext } from "react";
 import { useEffect } from "react";
-import {UserDataContext} from "../context/userContext";
-
+import { UserDataContext } from "../context/userContext";
 
 function Home() {
   const [Pickup, setPickup] = useState("");
@@ -33,23 +32,24 @@ function Home() {
   const [currentField, setCurrentField] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const[fare,setFare]=useState({});
-  const[vechileType,setVechileType]=useState(null);
+  const [fare, setFare] = useState({});
+  const [vechileType, setVechileType] = useState(null);
+  const[ride,setride]=useState(null);
 
-
-
-  const {Socket}=useContext(SocketContext);
-  const {user}=useContext(UserDataContext);
+  const { Socket } = useContext(SocketContext);
+  const { user } = useContext(UserDataContext);
 
   useEffect(() => {
     if (!user) return;
     console.log(user);
-    Socket.emit('join', { userType: 'user', userId: user._id });
+    Socket.emit("join", { userType: "user", userId: user._id });
   }, [user]);
 
-
-
-
+  Socket.on("ride-confirmed", (ride) => {
+    setwaitingPanel(true);
+    setvechileFound(false);
+    setride(ride);
+  });
 
   const submitHandler = (e) => {
     e.preventDefault();
@@ -90,7 +90,6 @@ function Home() {
     // setPanel(false);
     setSuggestions([]);
     // Optionally, you can open the next panel after selection
-    
   };
 
   // panel gsap
@@ -172,42 +171,51 @@ function Home() {
     try {
       setvechilePanelOpen(true);
       setPanel(false);
-  
+
       const token = localStorage.getItem("token"); // Ensure token is retrieved correctly
       if (!token) {
         console.error("❌ No token found in localStorage!");
         return;
       }
-  
-      console.log("🟡 Sending request to:", `${import.meta.env.VITE_BASE_URL}/rides/get-fare`);
+
+      console.log(
+        "🟡 Sending request to:",
+        `${import.meta.env.VITE_BASE_URL}/rides/get-fare`
+      );
       console.log("📍 Pickup:", Pickup, "📍 Destination:", Destination);
-  
-      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/rides/get-fare`, {
-        params: { Pickup, Destination },
-        headers: {
-          Authorization: `Bearer ${token}`, // Ensure Bearer is included
-        },
-      });
-  
+
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/rides/get-fare`,
+        {
+          params: { Pickup, Destination },
+          headers: {
+            Authorization: `Bearer ${token}`, // Ensure Bearer is included
+          },
+        }
+      );
+
       console.log("✅ Response received:", response.data.fare);
       setFare(response.data.fare); // Store fare details in state (if needed)
     } catch (error) {
       console.error("❌ Error fetching fare:", error);
       if (error.response) {
-        console.error("📌 Server responded with:", error.response.status, error.response.data);
+        console.error(
+          "📌 Server responded with:",
+          error.response.status,
+          error.response.data
+        );
       }
     }
   }
 
-
-  const createRide=async()=>{
+  const createRide = async () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
         console.error("No token found in localStorage!");
         return;
       }
-      console.log({Pickup,Destination,vechileType});
+      console.log({ Pickup, Destination, vechileType });
 
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/rides/create`,
@@ -229,14 +237,14 @@ function Home() {
     } catch (error) {
       console.error("Error creating ride:", error);
       if (error.response) {
-        console.error("Server responded with:", error.response.status, error.response.data);
+        console.error(
+          "Server responded with:",
+          error.response.status,
+          error.response.data
+        );
       }
     }
-
-  }
-  
-
-
+  };
 
   return (
     <div className="h-screen relative overflow-hidden ">
@@ -305,8 +313,7 @@ function Home() {
         {Pickup && Destination && (
           <div className="p-4">
             <button
-              onClick={() => findTrip()
-              }
+              onClick={() => findTrip()}
               className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition"
             >
               Confirm Location
@@ -357,17 +364,22 @@ function Home() {
         className="w-full fixed z-10 bottom-0 p-3 bg-white py-6 translate-y-full "
       >
         <LookingForDriver
-         Pickup={Pickup}
-         vechileType={vechileType}
-         Destination={Destination}
-         fare={fare}
-         setvechileFound={setvechileFound} />
+          Pickup={Pickup}
+          vechileType={vechileType}
+          Destination={Destination}
+          fare={fare}
+          setvechileFound={setvechileFound}
+        />
       </div>
       <div
         ref={waitingForDriverRef}
         className="w-full fixed z-10 bottom-0 p-3 bg-white py-6  "
       >
-        <WaitingForDriver setwaitingPanel={setwaitingPanel} />
+        <WaitingForDriver
+         ride={ride}
+         waitingPanel={waitingPanel}
+         setvechileFound={setvechileFound}
+         setwaitingPanel={setwaitingPanel} />
       </div>
     </div>
   );
